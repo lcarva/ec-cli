@@ -17,23 +17,24 @@
 package cmd
 
 import (
-	"github.com/hacbs-contract/ec-cli/internal/appdata"
-	"github.com/hacbs-contract/ec-cli/internal/pipeline"
+	"context"
+	"fmt"
+
 	"github.com/spf13/cobra"
 )
 
-func validateCmd() *cobra.Command {
+type appdataValidationFn func(context.Context) (*interface{}, error)
+
+func validateAppdataCmd(validate appdataValidationFn) *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "validate",
-		Short: "Provides validation of various object",
-		Long:  "TODO",
+		Use:     "appdata",
+		Short:   "Validates an appdata git repo",
+		Long:    `Validate the Tekton resources defined in, or referenced by, an appdata git repository.`,
+		Example: "",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			fmt.Println("Validating appdata git repo...")
+			return nil
+		},
 	}
 	return cmd
-}
-
-func init() {
-	validate := validateCmd()
-	validate.AddCommand(validatePipelineCmd(pipeline.ValidatePipeline))
-	validate.AddCommand(validateAppdataCmd(appdata.Validate))
-	rootCmd.AddCommand(validate)
 }

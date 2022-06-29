@@ -14,26 +14,16 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-package cmd
+package appdata
 
 import (
-	"github.com/hacbs-contract/ec-cli/internal/appdata"
-	"github.com/hacbs-contract/ec-cli/internal/pipeline"
-	"github.com/spf13/cobra"
+	"context"
 )
 
-func validateCmd() *cobra.Command {
-	cmd := &cobra.Command{
-		Use:   "validate",
-		Short: "Provides validation of various object",
-		Long:  "TODO",
-	}
-	return cmd
+func Validate(ctx context.Context) (*interface{}, error) {
+	return nil, nil
 }
 
-func init() {
-	validate := validateCmd()
-	validate.AddCommand(validatePipelineCmd(pipeline.ValidatePipeline))
-	validate.AddCommand(validateAppdataCmd(appdata.Validate))
-	rootCmd.AddCommand(validate)
+func NewEvaluator(ctx context.Context) (*interface{}, error) {
+	return nil, nil
 }
