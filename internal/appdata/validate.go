@@ -18,12 +18,44 @@ package appdata
 
 import (
 	"context"
+	"fmt"
+	"io/ioutil"
+	"os"
+	"path"
+	"path/filepath"
+	"strings"
 )
 
-func Validate(ctx context.Context) (*interface{}, error) {
-	return nil, nil
-}
+func Validate(ctx context.Context, repoDir string) error {
+	ignorePrefix := path.Join(repoDir, ".git") + string(os.PathSeparator)
 
-func NewEvaluator(ctx context.Context) (*interface{}, error) {
-	return nil, nil
+	err := filepath.Walk(repoDir, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+		if info.IsDir() || strings.HasPrefix(path, ignorePrefix) {
+			return nil
+		}
+		content, err := ioutil.ReadFile(path)
+		if err != nil {
+			return nil
+		}
+
+		bundles, err := findBundles(content)
+		if err != nil {
+			return err
+		}
+		if len(bundles) > 0 {
+			// TODO: Remove this Println
+			fmt.Println(path, "contains bundles:", bundles)
+		}
+
+		return nil
+	})
+
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

@@ -20,21 +20,30 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/hacbs-contract/ec-cli/internal/appdata"
 	"github.com/spf13/cobra"
 )
 
-type appdataValidationFn func(context.Context) (*interface{}, error)
+type appdataValidationFn func(context.Context, string) error
 
 func validateAppdataCmd(validate appdataValidationFn) *cobra.Command {
+	var args = struct {
+		RepoDir string
+	}{
+		RepoDir: ".",
+	}
 	cmd := &cobra.Command{
 		Use:     "appdata",
 		Short:   "Validates an appdata git repo",
 		Long:    `Validate the Tekton resources defined in, or referenced by, an appdata git repository.`,
 		Example: "",
-		RunE: func(cmd *cobra.Command, args []string) error {
-			fmt.Println("Validating appdata git repo...")
-			return nil
+		Args:    cobra.NoArgs,
+		RunE: func(cmd *cobra.Command, _ []string) error {
+			fmt.Printf("Processing appdata git repo in %s\n", args.RepoDir)
+			err := appdata.Validate(cmd.Context(), args.RepoDir)
+			return err
 		},
 	}
+	cmd.Flags().StringVar(&args.RepoDir, "repo-dir", args.RepoDir, "directory containing the cloned appdata git repo")
 	return cmd
 }

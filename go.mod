@@ -12,9 +12,10 @@ require (
 	github.com/go-openapi/strfmt v0.21.2
 	github.com/golangci/golangci-lint v1.46.2
 	github.com/google/addlicense v1.0.0
-	github.com/google/go-containerregistry v0.8.1-0.20220216220642-00c59d91847c
+	github.com/google/go-containerregistry v0.8.1-0.20220414143355-892d7a808387
 	github.com/hacbs-contract/enterprise-contract-controller v0.0.0-20220525095719-1a34e1604a54
 	github.com/hashicorp/go-getter v1.6.1
+	github.com/hashicorp/go-multierror v1.1.1
 	github.com/in-toto/in-toto-golang v0.3.4-0.20211211042327-af1f9fb822bf
 	github.com/mendersoftware/gobinarycoverage v0.0.0-20220328122436-2231dfd754e3
 	github.com/open-policy-agent/conftest v0.32.0
@@ -26,12 +27,15 @@ require (
 	github.com/spf13/afero v1.8.2
 	github.com/spf13/cobra v1.4.0
 	github.com/stretchr/testify v1.7.1
+	github.com/tektoncd/pipeline v0.37.0
+	github.com/tektoncd/triggers v0.20.1
 	github.com/testcontainers/testcontainers-go v0.13.0
 	github.com/transparency-dev/merkle v0.0.1
 	github.com/walkerus/go-wiremock v1.2.0
 	k8s.io/apimachinery v0.24.1
 	k8s.io/client-go v0.24.1
 	sigs.k8s.io/controller-runtime v0.12.1
+	sigs.k8s.io/yaml v1.3.0
 )
 
 replace go.etcd.io/etcd/v3 => go.etcd.io/etcd/v3 v3.6.0-alpha.0
@@ -45,6 +49,8 @@ require (
 	cloud.google.com/go/compute v1.6.1 // indirect
 	cloud.google.com/go/iam v0.3.0 // indirect
 	cloud.google.com/go/storage v1.22.1 // indirect
+	contrib.go.opencensus.io/exporter/ocagent v0.7.1-0.20200907061046-05415f1de66d // indirect
+	contrib.go.opencensus.io/exporter/prometheus v0.4.0 // indirect
 	github.com/Antonboom/errname v0.1.6 // indirect
 	github.com/Antonboom/nilnil v0.1.1 // indirect
 	github.com/Azure/azure-sdk-for-go v64.0.0+incompatible // indirect
@@ -143,6 +149,7 @@ require (
 	github.com/esimonov/ifshort v1.0.4 // indirect
 	github.com/ettle/strcase v0.1.1 // indirect
 	github.com/evanphx/json-patch v4.12.0+incompatible // indirect
+	github.com/evanphx/json-patch/v5 v5.6.0 // indirect
 	github.com/fatih/color v1.13.0 // indirect
 	github.com/fatih/structtag v1.2.0 // indirect
 	github.com/firefart/nonamedreturns v1.0.1 // indirect
@@ -154,6 +161,8 @@ require (
 	github.com/go-critic/go-critic v0.6.3 // indirect
 	github.com/go-git/gcfg v1.5.0 // indirect
 	github.com/go-ini/ini v1.66.4 // indirect
+	github.com/go-kit/log v0.2.0 // indirect
+	github.com/go-logfmt/logfmt v0.5.1 // indirect
 	github.com/go-logr/logr v1.2.3 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
 	github.com/go-openapi/analysis v0.21.2 // indirect
@@ -224,7 +233,6 @@ require (
 	github.com/hashicorp/go-cleanhttp v0.5.2 // indirect
 	github.com/hashicorp/go-immutable-radix v1.3.1 // indirect
 	github.com/hashicorp/go-memdb v1.3.0 // indirect
-	github.com/hashicorp/go-multierror v1.1.1 // indirect
 	github.com/hashicorp/go-retryablehttp v0.7.1 // indirect
 	github.com/hashicorp/go-safetemp v1.0.0 // indirect
 	github.com/hashicorp/go-version v1.4.0 // indirect
@@ -306,6 +314,7 @@ require (
 	github.com/prometheus/client_model v0.2.0 // indirect
 	github.com/prometheus/common v0.34.0 // indirect
 	github.com/prometheus/procfs v0.7.3 // indirect
+	github.com/prometheus/statsd_exporter v0.21.0 // indirect
 	github.com/quasilyte/go-ruleguard v0.3.16-0.20220213074421-6aa060fab41a // indirect
 	github.com/quasilyte/gogrep v0.0.0-20220120141003-628d8b3623b5 // indirect
 	github.com/quasilyte/regex/syntax v0.0.0-20200407221936-30656e2c4a95 // indirect
@@ -417,7 +426,7 @@ require (
 	gopkg.in/square/go-jose.v2 v2.6.0 // indirect
 	gopkg.in/warnings.v0 v0.1.2 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
-	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b // indirect
+	gopkg.in/yaml.v3 v3.0.1 // indirect
 	honnef.co/go/tools v0.3.1 // indirect
 	k8s.io/api v0.24.1 // indirect
 	k8s.io/apiextensions-apiserver v0.24.0 // indirect
@@ -436,5 +445,4 @@ require (
 	sigs.k8s.io/json v0.0.0-20211208200746-9f7c6b3444d2 // indirect
 	sigs.k8s.io/release-utils v0.6.0 // indirect
 	sigs.k8s.io/structured-merge-diff/v4 v4.2.1 // indirect
-	sigs.k8s.io/yaml v1.3.0 // indirect
 )
