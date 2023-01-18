@@ -34,5 +34,6 @@ func init() {
 	fetch.AddCommand(commitAuthorizationCmd())
 	fetch.AddCommand(k8sResourceAuthorizationCmd())
 	fetch.AddCommand(fetchPolicyCmd())
+	fetch.AddCommand(fetchBranchProtectionCmd())
 	RootCmd.AddCommand(fetch)
 }
