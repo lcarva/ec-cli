@@ -45,6 +45,7 @@ import (
 	s "github.com/google/go-containerregistry/pkg/v1/static"
 	"github.com/google/go-containerregistry/pkg/v1/types"
 	"github.com/in-toto/in-toto-golang/in_toto"
+	specs "github.com/opencontainers/image-spec/specs-go/v1"
 	"github.com/sigstore/cosign/v2/pkg/cosign"
 	"github.com/sigstore/cosign/v2/pkg/oci"
 	"github.com/sigstore/cosign/v2/pkg/oci/layout"
@@ -396,6 +397,22 @@ func createAndPushImageWithLayer(ctx context.Context, imageName string, files *g
 	}
 
 	return ctx, nil
+}
+
+func createAndPushLayer(ctx context.Context, content string, imageName string) (context.Context, error) {
+	l := s.NewLayer([]byte(content), specs.MediaTypeImageLayer)
+
+	ref, err := registry.ImageReferenceInStubRegistry(ctx, imageName)
+	if err != nil {
+		return ctx, err
+	}
+
+	repo, err := name.NewRepository(ref.String())
+	if err != nil {
+		return ctx, err
+	}
+
+	return ctx, remote.WriteLayer(repo, l)
 }
 
 func labelImage(ctx context.Context, imageName string, labels *godog.Table) (context.Context, error) {
@@ -979,4 +996,5 @@ func AddStepsTo(sc *godog.ScenarioContext) {
 	sc.Step(`^an image named "([^"]*)" with signature from "([^"]*)"$`, steal("sig"))
 	sc.Step(`^an image named "([^"]*)" with attestation from "([^"]*)"$`, steal("att"))
 	sc.Step(`^all images relating to "([^"]*)" are copied to "([^"]*)"$`, copyAllImages)
+	sc.Step(`^an OCI blob with content "([^"]*)" in the repo "([^"]*)"$`, createAndPushLayer)
 }

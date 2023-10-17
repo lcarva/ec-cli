@@ -18,6 +18,7 @@ package oci
 
 import (
 	"context"
+	"fmt"
 	"os"
 	"path"
 	"strconv"
@@ -25,6 +26,8 @@ import (
 	"github.com/google/go-containerregistry/pkg/name"
 	v1 "github.com/google/go-containerregistry/pkg/v1"
 	"github.com/google/go-containerregistry/pkg/v1/cache"
+	"github.com/google/go-containerregistry/pkg/v1/empty"
+	"github.com/google/go-containerregistry/pkg/v1/mutate"
 	"github.com/google/go-containerregistry/pkg/v1/remote"
 	log "github.com/sirupsen/logrus"
 )
@@ -59,6 +62,7 @@ func initCache() {
 
 type client interface {
 	Image(name.Reference, ...remote.Option) (v1.Image, error)
+	Layer(name.Digest, ...remote.Option) (v1.Layer, error)
 }
 
 var defaultClient = remoteClient{}
@@ -90,4 +94,29 @@ func (*remoteClient) Image(ref name.Reference, opts ...remote.Option) (v1.Image,
 	}
 
 	return img, nil
+}
+
+func (*remoteClient) Layer(ref name.Digest, options ...remote.Option) (v1.Layer, error) {
+	layer, err := remote.Layer(ref, options...)
+	if err != nil {
+		return nil, err
+	}
+
+	if imgCache != nil {
+		// The gcr.cache package doesn't provide an API to cache layers directly. To work around
+		// this, we wrap the layer in an image and cache that.
+		img, err := mutate.AppendLayers(empty.Image, layer)
+		if err != nil {
+			return nil, err
+		}
+		layers, err := img.Layers()
+		if err != nil {
+			return nil, err
+		}
+		if len(layers) != 1 {
+			return nil, fmt.Errorf("unexpected amount of layers, %d", len(layers))
+		}
+		layer = layers[0]
+	}
+	return layer, nil
 }
