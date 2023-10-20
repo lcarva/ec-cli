@@ -32,6 +32,7 @@ import (
 	"github.com/google/go-containerregistry/pkg/registry"
 	"github.com/google/go-containerregistry/pkg/v1/random"
 	"github.com/google/go-containerregistry/pkg/v1/remote"
+	specs "github.com/opencontainers/image-spec/specs-go/v1"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -87,4 +88,39 @@ func TestImage(t *testing.T) {
 
 	blobDownloadCount := strings.Count(l.String(), "GET /v2/repository/image/blobs/sha256:")
 	assert.Equal(t, 5, blobDownloadCount) // three configs fetched each time and two layers fetched only once
+}
+
+func TestLayer(t *testing.T) {
+	// TODO: Change usage of `specs` to `types`:
+	//		https://pkg.go.dev/github.com/google/go-containerregistry@v0.16.1/pkg/v1/types
+	layer, err := random.Layer(1024, specs.MediaTypeImageLayer)
+	require.NoError(t, err)
+	digest, err := layer.Digest()
+	require.NoError(t, err)
+
+	l := &bytes.Buffer{}
+	registry := httptest.NewServer(registry.New(registry.Logger(log.New(l, "", 0))))
+	t.Cleanup(registry.Close)
+
+	u, err := url.Parse(registry.URL)
+	require.NoError(t, err)
+
+	ref, err := name.NewDigest(
+		fmt.Sprintf("localhost:%s/namespace/repository@%s", u.Port(), digest))
+	require.NoError(t, err)
+
+	require.NoError(t, remote.WriteLayer(ref.Repository, layer))
+
+	for i := 0; i < 15; i++ {
+		l, err := defaultClient.Layer(ref)
+		require.NoError(t, err)
+		raw, err := l.Compressed()
+		require.NoError(t, err)
+		_, err = io.ReadAll(raw)
+		require.NoError(t, err)
+	}
+
+	// require.Equal(t, l.String(), "yolo")
+	blobDownloadCount := strings.Count(l.String(), fmt.Sprintf("GET /v2/namespace/repository/blobs/%s", digest))
+	assert.Equal(t, 1, blobDownloadCount)
 }

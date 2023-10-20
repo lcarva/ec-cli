@@ -18,16 +18,14 @@ package oci
 
 import (
 	"context"
-	"fmt"
 	"os"
 	"path"
 	"strconv"
+	"strings"
 
 	"github.com/google/go-containerregistry/pkg/name"
 	v1 "github.com/google/go-containerregistry/pkg/v1"
 	"github.com/google/go-containerregistry/pkg/v1/cache"
-	"github.com/google/go-containerregistry/pkg/v1/empty"
-	"github.com/google/go-containerregistry/pkg/v1/mutate"
 	"github.com/google/go-containerregistry/pkg/v1/remote"
 	log "github.com/sirupsen/logrus"
 )
@@ -96,27 +94,81 @@ func (*remoteClient) Image(ref name.Reference, opts ...remote.Option) (v1.Image,
 	return img, nil
 }
 
-func (*remoteClient) Layer(ref name.Digest, options ...remote.Option) (v1.Layer, error) {
-	layer, err := remote.Layer(ref, options...)
-	if err != nil {
-		return nil, err
+// TODO: Wrap all the returned errors
+func (*remoteClient) Layer(ref name.Digest, opts ...remote.Option) (v1.Layer, error) {
+	if imgCache == nil {
+		layer, err := remote.Layer(ref, opts...)
+		if err != nil {
+			return nil, err
+		}
+		return layer, nil
 	}
 
-	if imgCache != nil {
-		// The gcr.cache package doesn't provide an API to cache layers directly. To work around
-		// this, we wrap the layer in an image and cache that.
-		img, err := mutate.AppendLayers(empty.Image, layer)
+	hash := v1.Hash{}
+	hash.Algorithm, hash.Hex, _ = strings.Cut(ref.DigestStr(), ":")
+	layer, err := imgCache.Get(hash)
+	if err != nil {
+		if err != cache.ErrNotFound {
+			return nil, err
+		}
+		// TODO: hmmm this fetches the layer from the registry. But then it is fetched again
+		// later when using the cache. Each layer is always fetched exactly 2 times, regardless
+		// of how many times this function is called, and that's bad....
+		layer, err := remote.Layer(ref, opts...)
 		if err != nil {
 			return nil, err
 		}
-		layers, err := img.Layers()
+		cachedLayer, err := imgCache.Put(layer)
 		if err != nil {
 			return nil, err
 		}
-		if len(layers) != 1 {
-			return nil, fmt.Errorf("unexpected amount of layers, %d", len(layers))
-		}
-		layer = layers[0]
+		return cachedLayer, nil
 	}
 	return layer, nil
+
+	// manifest := `
+	// `
+	// imp :=
+	// The gcr.cache package doesn't provide an API to cache layers directly. To work around
+	// this, we wrap the layer in an image and cache that.
+	// manifest, err := empty.Image.Manifest()
+	// if err != nil {
+	// 	return nil, err
+	// }
+
+	// descriptor, err := remote.Head(ref, opts...)
+	// if err != nil {
+	// 	return nil, err
+	// }
+	// manifest.Layers = append(manifest.Layers, *descriptor)
+
+	// // yolo := v1.Descriptor{
+	// // 	MediaType:    specs.MediaTypeImageLayer,
+	// // 	Size:         0,
+	// // 	Digest:       v1.Hash{},
+	// // 	Data:         []byte{},
+	// // 	URLs:         []string{},
+	// // 	Annotations:  map[string]string{},
+	// // 	Platform:     &v1.Platform{},
+	// // 	ArtifactType: "",
+	// // }
+	// // Layers:[]v1.Descriptor{v1.Descriptor{MediaType:"application/vnd.docker.image.rootfs.diff.tar.gzip", Size:4352, Digest:v1.Hash{Algorithm:"sha256", Hex:"1ff7945e970d4ed01d8942ac5e7ca268bed25b047707cfcef2f9cf8e0cb1b3f7"}
+
+	// // img, err := mutate.AppendLayers(empty.Image, descriptor)
+	// // if err != nil {
+	// // 	return nil, err
+	// // }
+
+	// layers, err := img.Layers()
+	// if err != nil {
+	// 	return nil, err
+	// }
+
+	// if len(layers) != 1 {
+	// 	return nil, fmt.Errorf("unexpected amount of layers, %d", len(layers))
+	// }
+
+	// return nil, nil
+	// layer = layers[0]
+	// return layer, nil
 }
