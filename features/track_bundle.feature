@@ -1,3 +1,4 @@
+@focus
 Feature: track bundles
   The ec command line can track bundles and generate tracking data files
 
