@@ -41,8 +41,6 @@ RUN cd tools/kubectl && go mod download
 # Now copy everything including .git
 COPY . .
 
-RUN /build/build.sh "${BUILD_LIST}" "${BUILD_SUFFIX}"
-
 ## Final image
 
 FROM registry.access.redhat.com/ubi9/ubi-minimal:9.4@sha256:c0e70387664f30cd9cf2795b547e4a9a51002c44a4a86aa9335ab030134bf392
@@ -60,30 +58,3 @@ LABEL \
   com.redhat.component="ec-cli"
 
 # Install tools we want to use in the Tekton task
-RUN microdnf upgrade --assumeyes --nodocs --setopt=keepcache=0 --refresh && microdnf -y --nodocs --setopt=keepcache=0 install git-core jq
-
-# Copy all the binaries so they're available to extract and download
-# (Beware if you're testing this locally it will copy everything from
-# your dist directory, not just the freshly built binaries.)
-COPY --from=build /build/dist/ec* /usr/local/bin/
-
-# Gzip them because that's what the cli downloader image expects, see
-# https://github.com/securesign/cosign/blob/main/Dockerfile.client-server-re.rh
-RUN gzip /usr/local/bin/ec_*
-
-# Copy the one ec binary that can run in this container
-COPY --from=build "/build/dist/ec_${TARGETOS}_${TARGETARCH}" /usr/local/bin/ec
-
-# Copy the one kubectl binary that can run in this container
-COPY --from=build "/build/dist/kubectl_${TARGETOS}_${TARGETARCH}" /usr/local/bin/kubectl
-
-# OpenShift preflight check requires a license
-COPY --from=build /build/LICENSE /licenses/LICENSE
-
-# OpenShift preflight check requires a non-root user
-USER 1001
-
-# Show some version numbers for troubleshooting purposes
-RUN git version && jq --version && ec version && ls -l /usr/local/bin
-
-ENTRYPOINT ["/usr/local/bin/ec"]
