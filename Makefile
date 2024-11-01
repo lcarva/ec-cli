@@ -83,6 +83,11 @@ build-for-test: dist/ec_$(BUILD_IMG_ARCH)
 clean: ## Delete build output
 	@rm -f dist/*
 
+.PHONY: generate-pipelines
+generate-pipelines: ## Generate release pipelines
+	kustomize build ./release/src/cli --output ./release/push-to-registry-cli.yaml
+	kustomize build ./release/src/tekton-task --output ./release/push-to-registry-tekton-task.yaml
+
 ##@ Testing
 
 # Declutter the output by grepping out the files where there are no
