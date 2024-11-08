@@ -22,18 +22,21 @@ metadata:
 spec:
   description: Tekton pipeline to release Snapshots to a registry.
   params:
-  - default: quay.io/enterprise-contract/cli
+  # TODO: Use the real repos here.
+  - default: quay.io/lucarval/test-release-ec-cli
     description: Location to push the CLI image to
     name: cli-repo
     type: string
-  - default: quay.io/enterprise-contract/tekton-task
+  - default: quay.io/lucarval/test-release-ec-bundle
     description: Location to push the bundle image to
     name: bundle-repo
     type: string
   - description: The namespaced name (namespace/name) of the snapshot
     name: snapshot
     type: string
-  - default: pipeline_intention=release
+  - default: ""
+    # TODO: Do we care about this? It mostly enables weekday restrictions.
+    # default: pipeline_intention=release
     description: |
       Extra rule data to be merged into the policy specified in params.enterpriseContractPolicy. Use syntax
       "key1=value1,key2=value2..."
@@ -42,10 +45,11 @@ spec:
   tasks:
   - name: clone-repository
     params:
+    # TODO: Use the repo and revision here.
     - name: url
-      value: https://github.com/enterprise-contract/ec-cli
+      value: https://github.com/lcarva/ec-cli
     - name: revision
-      value: main
+      value: unified-build-release
     - name: subdirectory
       value: source
     taskRef:

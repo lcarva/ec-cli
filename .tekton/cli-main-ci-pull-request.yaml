@@ -7,15 +7,15 @@ metadata:
     build.appstudio.redhat.com/pull_request_number: '{{pull_request_number}}'
     build.appstudio.redhat.com/target_branch: '{{target_branch}}'
     pipelinesascode.tekton.dev/max-keep-runs: "3"
-    pipelinesascode.tekton.dev/on-cel-expression: event == "pull_request" && target_branch == "main"
+    pipelinesascode.tekton.dev/on-cel-expression: event == "pull_request" && target_branch == "unified-build-release"
     pipelinesascode.tekton.dev/pipeline: ".tekton/cli-build.yaml"
   creationTimestamp: null
   labels:
-    appstudio.openshift.io/application: ec-main-ci
-    appstudio.openshift.io/component: cli-main-ci
+    appstudio.openshift.io/application: ec-release
+    appstudio.openshift.io/component: ec-cli-with-bundle
     pipelines.appstudio.openshift.io/type: build
-  name: cli-main-ci-on-pull-request
-  namespace: rhtap-contract-tenant
+  name: ec-on-pull-request
+  namespace: lucarval-tenant
 spec:
   params:
     - name: git-url
@@ -23,9 +23,9 @@ spec:
     - name: revision
       value: '{{revision}}'
     - name: output-image
-      value: quay.io/redhat-user-workloads/rhtap-contract-tenant/ec-main-ci/cli-main-ci:on-pr-{{revision}}
+      value: quay.io/redhat-user-workloads/lucarval-tenant/ec-cli-with-bundle:on-pr-{{revision}}
     - name: bundle-cli-ref-repo
-      value: quay.io/redhat-user-workloads/rhtap-contract-tenant/ec-main-ci/cli-main-ci
+      value: quay.io/redhat-user-workloads/lucarval-tenant/ec-cli-with-bundle
     - name: image-expires-after
       value: 5d
     - name: dockerfile

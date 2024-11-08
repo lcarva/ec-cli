@@ -38,6 +38,8 @@ sources:
       exclude:
         # Not currently doing hermetic builds, see https://issues.redhat.com/browse/EC-360
         - hermetic_build_task.*
+        # TODO: Don't push this to main. This is just to debug things.
+        - test.no_skipped_tests
     ruleData:
       #
       # Make high sev CVEs non-blocking temporarily
