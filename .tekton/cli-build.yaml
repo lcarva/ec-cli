@@ -294,9 +294,6 @@ spec:
           operator: in
           values:
             - "true"
-      workspaces:
-        - name: source
-          workspace: workspace
     - name: deprecated-base-image-check
       params:
         - name: IMAGE_URL
