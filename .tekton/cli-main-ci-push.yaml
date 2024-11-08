@@ -13,7 +13,7 @@ metadata:
     appstudio.openshift.io/application: ec-release
     appstudio.openshift.io/component: ec-cli-with-bundle
     pipelines.appstudio.openshift.io/type: build
-  name: ec-on-pull-request
+  name: ec-on-push
   namespace: lucarval-tenant
 spec:
   params:
