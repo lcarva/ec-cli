@@ -22,6 +22,7 @@ ARG TARGETOS
 ARG TARGETARCH
 ARG BUILD_SUFFIX=""
 ARG BUILD_LIST="${TARGETOS}_${TARGETARCH}"
+ARG SEALIGHTS_TOKEN
 
 # Avoid safe directory git failures building with default user from go-toolset
 USER root
@@ -38,6 +39,30 @@ RUN cd tools/kubectl && go mod download
 
 # Now copy everything including .git
 COPY . .
+
+# Grab the Sealight agent and instrument the Go compiler
+WORKDIR /sealights
+RUN \
+    echo "[Sealights] Downloading Sealights Golang & CLI Agents..." && \
+    wget -nv -O sealights-go-agent.tar.gz https://agents.sealights.co/slgoagent/latest/slgoagent-linux-amd64.tar.gz &&\
+    wget -nv -O sealights-slcli.tar.gz https://agents.sealights.co/slcli/latest/slcli-linux-amd64.tar.gz &&\
+    tar -xzf ./sealights-go-agent.tar.gz && tar -xzf ./sealights-slcli.tar.gz &&\
+    rm -f ./sealights-go-agent.tar.gz ./sealights-slcli.tar.gz &&\
+    ./slgoagent -v 2> /dev/null | grep version && ./slcli -v 2> /dev/null | grep version
+
+RUN \
+    echo "Initializing Sealight config with a token" && \
+    ./slcli config init --lang go --token ${SEALIGHTS_TOKEN} && \
+    GIT_COMMIT_SHORT="$(git -C /build rev-parse --short HEAD)" && \
+    echo "Git commit short: ${GIT_COMMIT_SHORT}" && \
+    echo "Creating a build session ID" && \
+    ./slcli config create-bsid --app ec-cli-lucarval --branch main --build "${GIT_COMMIT_SHORT}.2" && \
+    echo "Scanning the build" && \
+    ./slcli scan --bsid buildSessionId.txt --path-to-scanner ./slgoagent --workspacepath /build --scm git
+
+
+# Back to building
+WORKDIR /build
 
 RUN /build/build.sh "${BUILD_LIST}" "${BUILD_SUFFIX}"
 
