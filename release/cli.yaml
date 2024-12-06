@@ -169,6 +169,7 @@ spec:
       value: $(params.cli-repo)
     runAfter:
     - verify-enterprise-contract-cli
+    - verify-enterprise-contract-bundle
     taskSpec:
       params:
       - name: snapshot-spec
@@ -196,6 +197,7 @@ spec:
     - name: target-repo
       value: $(params.bundle-repo)
     runAfter:
+    - verify-enterprise-contract-cli
     - verify-enterprise-contract-bundle
     taskSpec:
       params:
