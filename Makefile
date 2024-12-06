@@ -86,7 +86,6 @@ clean: ## Delete build output
 .PHONY: generate-pipelines
 generate-pipelines: ## Generate release pipelines
 	kustomize build ./release/src/cli --output ./release/cli.yaml
-	kustomize build ./release/src/tekton-task --output ./release/tekton-task.yaml
 
 ##@ Testing
 

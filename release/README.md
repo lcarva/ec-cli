@@ -20,12 +20,6 @@ achieve this is by using different Pipelines with different default values for t
 
 ## Hacking
 
-Build Pipeline
-
-- Build CLI image as usual
-- Build bundle image
-- TODO: Use referrer's API to connect them. Maybe...
-
 Release Pipeline
 
 - Fetch Snaphost. It should have a single component, the ec-cli.
