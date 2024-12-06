@@ -87,8 +87,8 @@ spec:
     params:
     - name: input
       value: $(params.snapshot)
-    runAfter:
-    - clone-repository
+    # runAfter:
+    # - clone-repository
     taskSpec:
       params:
       - name: input
