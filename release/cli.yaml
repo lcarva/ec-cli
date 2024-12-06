@@ -99,21 +99,12 @@ spec:
       - name: output
         type: string
       steps:
-      - image: quay.io/konflux-ci/appstudio-utils:latest
+      - command:
+        - hack/expand-snapshot.sh
+        - $(params.input)
+        - $(results.output.path)
+        image: quay.io/konflux-ci/appstudio-utils:latest
         name: expand
-        script: |
-          #!/bin/bash
-          set -xeuo pipefail
-
-          ls -la .
-          pwd
-
-          ls -la ..
-
-          ls -la ../source
-
-          find / -name 'expand-snapshot.sh'
-          ./hack/expand-snapshot.sh
         workingDir: $(workspaces.source.path)/$(context.pipelineRun.uid)
       workspaces:
       - name: source
