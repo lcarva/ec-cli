@@ -71,7 +71,7 @@ spec:
       value: https://github.com/lcarva/ec-cli
     - name: revision
       value: unified-build-release
-    - name: source
+    - name: subdirectory
       value: $(context.pipelineRun.uid)
     taskRef:
       params:
@@ -99,12 +99,21 @@ spec:
       - name: output
         type: string
       steps:
-      - command:
-        - hack/expand-snapshot.sh
-        - $(params.input)
-        - $(results.output.path)
-        image: quay.io/konflux-ci/appstudio-utils:latest
+      - image: quay.io/konflux-ci/appstudio-utils:latest
         name: expand
+        script: |
+          #!/bin/bash
+          set -xeuo pipefail
+
+          ls -la .
+          pwd
+
+          ls -la ..
+
+          ls -la ../source
+
+          find / -name 'expand-snapshot.sh'
+          ./hack/expand-snapshot.sh
         workingDir: $(workspaces.source.path)/$(context.pipelineRun.uid)
       workspaces:
       - name: source
