@@ -28,21 +28,17 @@ SNAPSHOT_NAME="${1#*/}"
 CLI_SNAPSHOT_PATH=$2
 BUNDLE_SNAPSHOT_PATH=$3
 
-function debug() {
-    echo "[DEBUG] $1" >&2
-}
-
-debug "Fetching ${SNAPSHOT_NAME} snapshot"
+echo "Fetching ${SNAPSHOT_NAME} snapshot"
 SNAPSHOT_SPEC="$(oc get snapshot ${SNAPSHOT_NAME} -o json | jq '.spec')"
-debug "${SNAPSHOT_SPEC}"
+echo "${SNAPSHOT_SPEC}"
 
-debug "Verifying snapshot contains a single component"
+echo "Verifying snapshot contains a single component"
 echo "${SNAPSHOT_SPEC}" | jq -e '.components | length == 1' > /dev/null
 
 CLI_IMAGE_REF="$(echo "${SNAPSHOT_SPEC}" | jq -r '.components[0].containerImage')"
-debug "CLI image ref: ${CLI_IMAGE_REF}"
+echo "CLI image ref: ${CLI_IMAGE_REF}"
 
-debug "Storing EC CLI snapshot in ${CLI_SNAPSHOT_PATH}"
+echo "Storing EC CLI snapshot in ${CLI_SNAPSHOT_PATH}"
 echo "${SNAPSHOT_SPEC}" > "${CLI_SNAPSHOT_PATH}"
 
 BUNDLE_IMAGE_REF="$(
@@ -51,10 +47,9 @@ BUNDLE_IMAGE_REF="$(
         .results[] | select(.name == "IMAGE_REF") | .value'
 )"
 
-debug "Bundle image ref: ${BUNDLE_IMAGE_REF}"
+echo "Bundle image ref: ${BUNDLE_IMAGE_REF}"
 
-debug "Creating new snapshot spec for bundle"
-
+echo "Creating new snapshot spec for bundle and storing in ${BUNDLE_SNAPSHOT_PATH}"
 echo "${SNAPSHOT_SPEC}" | jq  --arg bundle "${BUNDLE_IMAGE_REF}" \
     '.components[0].name = "tekton-bundle" | .components[0].containerImage = $bundle' | \
     tee "${BUNDLE_SNAPSHOT_PATH}"

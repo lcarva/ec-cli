@@ -41,6 +41,15 @@ spec:
     - name: input
       workspace: release-workspace
   params:
+  # TODO: Use the real repos here.
+  - default: quay.io/lucarval/test-release-ec-cli:latest
+    description: Location to push the CLI image to
+    name: cli-repo
+    type: string
+  - default: quay.io/lucarval/test-release-ec-bundle:latest
+    description: Location to push the bundle image to
+    name: bundle-repo
+    type: string
   - description: The namespaced name (namespace/name) of the snapshot
     name: snapshot
     type: string
@@ -127,7 +136,7 @@ spec:
     workspaces:
     - name: data
       workspace: release-workspace
-  # TODO: Use matrix
+  # TODO: Use matrix?
   - name: verify-enterprise-contract-bundle
     params:
     - name: IMAGES
@@ -152,5 +161,48 @@ spec:
     workspaces:
     - name: data
       workspace: release-workspace
+  - name: release-cli
+    params:
+    - name: snapshot-spec
+      value: $(tasks.expand-snapshot.results.cli-snapshot-spec)
+    - name: target-repo
+      value: $(params.cli-repo)
+    runAfter:
+    - verify-enterprise-contract-cli
+    taskSpec:
+      params:
+      - name: snapshot-spec
+        type: string
+      - name: target-repo
+        type: string
+      steps:
+      - command:
+        - hack/copy-snapshot-image.sh
+        - $(params.snapshot-spec)
+        - $(params.target-repo)
+        image: quay.io/konflux-ci/appstudio-utils:latest
+        name: copy
+  # TODO: Use matrix?
+  - name: release-bundle
+    params:
+    - name: snapshot-spec
+      value: $(tasks.expand-snapshot.results.bundle-snapshot-spec)
+    - name: target-repo
+      value: $(params.bundle-repo)
+    runAfter:
+    - verify-enterprise-contract-bundle
+    taskSpec:
+      params:
+      - name: snapshot-spec
+        type: string
+      - name: target-repo
+        type: string
+      steps:
+      - command:
+        - hack/copy-snapshot-image.sh
+        - $(params.snapshot-spec)
+        - $(params.target-repo)
+        image: quay.io/konflux-ci/appstudio-utils:latest
+        name: copy
   workspaces:
   - name: release-workspace
