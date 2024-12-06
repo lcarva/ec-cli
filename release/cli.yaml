@@ -95,7 +95,7 @@ spec:
     - name: subdirectory
       value: $(context.pipelineRun.uid)
     taskRef:
-      name: git-clone
+      name: git-clone-1-9-0
       kind: ClusterTask
     workspaces:
     - name: output
