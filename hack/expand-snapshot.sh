@@ -23,7 +23,8 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-SNAPSHOT_NAME=$1
+# Release service includes the namespace with the resource name. Let's clean that up.
+SNAPSHOT_NAME="${1#*/}"
 NEW_SNAPSHOT_PATH=$2
 
 function debug() {
