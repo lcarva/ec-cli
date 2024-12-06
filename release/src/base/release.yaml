@@ -53,25 +53,6 @@ spec:
   workspaces:
     - name: release-workspace
   tasks:
-    - name: verify-access-to-resources
-      params:
-        - name: release
-          value: $(params.release)
-        - name: releasePlan
-          value: $(params.releasePlan)
-        - name: snapshot
-          value: $(params.snapshot)
-        - name: requireInternalServices
-          value: "false"
-      taskRef:
-        resolver: "git"
-        params:
-          - name: url
-            value: https://github.com/konflux-ci/release-service-catalog.git
-          - name: revision
-            value: production
-          - name: pathInRepo
-            value: tasks/verify-access-to-resources/verify-access-to-resources.yaml
     - name: collect-data
       params:
         - name: release

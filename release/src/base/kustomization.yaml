@@ -20,9 +20,6 @@ kind: Kustomization
 resources:
   - release.yaml
 patches:
-  - path: tasks/verify-access-to-resources.yaml
-    target:
-      kind: Pipeline
   - path: tasks/collect-data.yaml
     target:
       kind: Pipeline
