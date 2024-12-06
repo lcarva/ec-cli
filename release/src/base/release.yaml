@@ -87,7 +87,9 @@ spec:
           - name: input
             type: string
         results:
-          - name: output
+          - name: cli-snapshot-spec
+            type: string
+          - name: bundle-snapshot-spec
             type: string
         steps:
           - name: expand
@@ -96,7 +98,8 @@ spec:
             command:
               - hack/expand-snapshot.sh
               - $(params.input)
-              - $(results.output.path)
+              - $(results.cli-snapshot-spec.path)
+              - $(results.bundle-snapshot-spec.path)
         workspaces:
           - name: source
       workspaces:

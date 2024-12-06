@@ -96,13 +96,16 @@ spec:
       - name: input
         type: string
       results:
-      - name: output
+      - name: cli-snapshot-spec
+        type: string
+      - name: bundle-snapshot-spec
         type: string
       steps:
       - command:
         - hack/expand-snapshot.sh
         - $(params.input)
-        - $(results.output.path)
+        - $(results.cli-snapshot-spec.path)
+        - $(results.bundle-snapshot-spec.path)
         image: quay.io/konflux-ci/appstudio-utils:latest
         name: expand
         workingDir: $(workspaces.source.path)/$(context.pipelineRun.uid)
