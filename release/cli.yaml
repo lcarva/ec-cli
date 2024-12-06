@@ -83,8 +83,6 @@ spec:
         value: task
       resolver: bundles
     workspaces:
-    - name: basic-auth
-      workspace: git-auth
     - name: output
       workspace: release-workspace
   - name: expand-snapshot
