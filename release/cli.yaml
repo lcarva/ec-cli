@@ -62,6 +62,29 @@ spec:
     name: enterpriseContractExtraRuleData
     type: string
   tasks:
+  # TODO: Can't use Konflux's git-clone Task because that requires a security context not provided
+  # to the ServiceAccount running this pipeline (securityContext.runAsUser: 0).
+  # - name: clone-repository
+  #   params:
+  #   # TODO: Use the repo and revision here.
+  #   - name: url
+  #     value: https://github.com/lcarva/ec-cli
+  #   - name: revision
+  #     value: unified-build-release
+  #   - name: subdirectory
+  #     value: $(context.pipelineRun.uid)
+  #   taskRef:
+  #     params:
+  #     - name: name
+  #       value: git-clone
+  #     - name: bundle
+  #       value: quay.io/konflux-ci/tekton-catalog/task-git-clone:0.1@sha256:d091a9e19567a4cbdc5acd57903c71ba71dc51d749a4ba7477e689608851e981
+  #     - name: kind
+  #       value: task
+  #     resolver: bundles
+  #   workspaces:
+  #   - name: output
+  #     workspace: release-workspace
   - name: clone-repository
     params:
     # TODO: Use the repo and revision here.
@@ -72,14 +95,8 @@ spec:
     - name: subdirectory
       value: $(context.pipelineRun.uid)
     taskRef:
-      params:
-      - name: name
-        value: git-clone
-      - name: bundle
-        value: quay.io/konflux-ci/tekton-catalog/task-git-clone:0.1@sha256:d091a9e19567a4cbdc5acd57903c71ba71dc51d749a4ba7477e689608851e981
-      - name: kind
-        value: task
-      resolver: bundles
+      name: git-clone
+      kind: ClusterTask
     workspaces:
     - name: output
       workspace: release-workspace
