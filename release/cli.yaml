@@ -182,6 +182,12 @@ spec:
         - $(params.target-repo)
         image: quay.io/konflux-ci/appstudio-utils:latest
         name: copy
+        workingDir: $(workspaces.source.path)/$(context.pipelineRun.uid)
+      workspaces:
+      - name: source
+    workspaces:
+    - name: source
+      workspace: release-workspace
   # TODO: Use matrix?
   - name: release-bundle
     params:
@@ -204,5 +210,11 @@ spec:
         - $(params.target-repo)
         image: quay.io/konflux-ci/appstudio-utils:latest
         name: copy
+        workingDir: $(workspaces.source.path)/$(context.pipelineRun.uid)
+      workspaces:
+      - name: source
+    workspaces:
+    - name: source
+      workspace: release-workspace
   workspaces:
   - name: release-workspace
