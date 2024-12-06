@@ -42,11 +42,11 @@ spec:
       workspace: release-workspace
   params:
   # TODO: Use the real repos here.
-  - default: quay.io/lucarval/test-release-ec-cli:latest
+  - default: quay.io/lucarval/test-release-ec-cli
     description: Location to push the CLI image to
     name: cli-repo
     type: string
-  - default: quay.io/lucarval/test-release-ec-bundle:latest
+  - default: quay.io/lucarval/test-release-ec-bundle
     description: Location to push the bundle image to
     name: bundle-repo
     type: string
