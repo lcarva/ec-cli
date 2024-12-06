@@ -18,5 +18,5 @@
 # Need changes from https://github.com/konflux-ci/release-service-catalog/pull/631 to be in the
 # production branch
 - op: replace
-  path: /spec/tasks/2/taskRef/params/1/value
+  path: /spec/tasks/4/taskRef/params/1/value
   value: development

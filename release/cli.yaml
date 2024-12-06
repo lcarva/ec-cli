@@ -65,6 +65,54 @@ spec:
     name: enterpriseContractTimeout
     type: string
   tasks:
+  - name: clone-repository
+    params:
+    - name: url
+      value: https://github.com/lcarva/ec-cli
+    - name: revision
+      value: unified-build-release
+    - name: source
+      value: $(context.pipelineRun.uid)
+    taskRef:
+      params:
+      - name: name
+        value: git-clone
+      - name: bundle
+        value: quay.io/konflux-ci/tekton-catalog/task-git-clone:0.1@sha256:d091a9e19567a4cbdc5acd57903c71ba71dc51d749a4ba7477e689608851e981
+      - name: kind
+        value: task
+      resolver: bundles
+    workspaces:
+    - name: basic-auth
+      workspace: git-auth
+    - name: output
+      workspace: release-workspace
+  - name: expand-snapshot
+    params:
+    - name: input
+      value: $(params.snapshot)
+    runAfter:
+    - clone-repository
+    taskSpec:
+      params:
+      - name: input
+        type: string
+      results:
+      - name: output
+        type: string
+      steps:
+      - command:
+        - hack/expand-snapshot.sh
+        - $(params.input)
+        - $(results.output.path)
+        image: quay.io/konflux-ci/appstudio-utils:latest
+        name: expand
+        workingDir: $(workspaces.source.path)/$(context.pipelineRun.uid)
+      workspaces:
+      - name: source
+    workspaces:
+    - name: source
+      workspace: release-workspace
   - name: collect-data
     params:
     - name: release

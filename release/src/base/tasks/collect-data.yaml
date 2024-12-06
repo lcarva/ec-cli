@@ -17,7 +17,7 @@
 
 # Need these changes: https://github.com/konflux-ci/release-service-catalog/pull/672
 - op: replace
-  path: /spec/tasks/0/taskRef/params
+  path: /spec/tasks/2/taskRef/params
   value:
     - name: url
       value: https://github.com/lcarva/release-service-bundles.git
