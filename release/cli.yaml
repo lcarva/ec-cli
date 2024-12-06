@@ -1,3 +1,4 @@
+---
 # Copyright The Enterprise Contract Contributors
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -40,33 +41,21 @@ spec:
     - name: input
       workspace: release-workspace
   params:
-  - description: The namespaced name (namespace/name) of the Release custom resource
-      initiating this pipeline execution
-    name: release
-    type: string
-  - description: The namespaced name (namespace/name) of the releasePlan
-    name: releasePlan
-    type: string
   - description: The namespaced name (namespace/name) of the snapshot
     name: snapshot
     type: string
-  - default: github.com/enterprise-contract/ec-cli//policies/cli
-    description: JSON representation of the EnterpriseContractPolicy
-    name: enterpriseContractPolicy
-    type: string
-  - default: pipeline_intention=release
+  - default: ""
+    # TODO: Do we care about this? It mostly enables weekday restrictions.
+    # default: pipeline_intention=release
     description: |
       Extra rule data to be merged into the policy specified in params.enterpriseContractPolicy. Use syntax
       "key1=value1,key2=value2..."
     name: enterpriseContractExtraRuleData
     type: string
-  - default: 40m0s
-    description: Timeout setting for `ec validate`
-    name: enterpriseContractTimeout
-    type: string
   tasks:
   - name: clone-repository
     params:
+    # TODO: Use the repo and revision here.
     - name: url
       value: https://github.com/lcarva/ec-cli
     - name: revision
@@ -121,15 +110,11 @@ spec:
     - name: SSL_CERT_DIR
       value: /var/run/secrets/kubernetes.io/serviceaccount
     - name: POLICY_CONFIGURATION
-      value: $(params.enterpriseContractPolicy)
-    - name: STRICT
-      value: "1"
+      value: $(workspaces.data.path)/$(context.pipelineRun.uid)/policies/cli/policy.yaml
     - name: IGNORE_REKOR
       value: "true"
     - name: EXTRA_RULE_DATA
       value: $(params.enterpriseContractExtraRuleData)
-    - name: TIMEOUT
-      value: $(params.enterpriseContractTimeout)
     taskRef:
       params:
       - name: bundle
@@ -139,6 +124,10 @@ spec:
       - name: name
         value: verify-enterprise-contract
       resolver: bundles
+    workspaces:
+    - name: data
+      workspace: release-workspace
+  # TODO: Use matrix
   - name: verify-enterprise-contract-bundle
     params:
     - name: IMAGES
@@ -146,15 +135,11 @@ spec:
     - name: SSL_CERT_DIR
       value: /var/run/secrets/kubernetes.io/serviceaccount
     - name: POLICY_CONFIGURATION
-      value: $(params.enterpriseContractPolicy)
-    - name: STRICT
-      value: "1"
+      value: $(workspaces.data.path)/$(context.pipelineRun.uid)/policies/tekton-task/policy.yaml
     - name: IGNORE_REKOR
       value: "true"
     - name: EXTRA_RULE_DATA
       value: $(params.enterpriseContractExtraRuleData)
-    - name: TIMEOUT
-      value: $(params.enterpriseContractTimeout)
     taskRef:
       params:
       - name: bundle
@@ -164,5 +149,8 @@ spec:
       - name: name
         value: verify-enterprise-contract
       resolver: bundles
+    workspaces:
+    - name: data
+      workspace: release-workspace
   workspaces:
   - name: release-workspace
