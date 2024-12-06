@@ -105,79 +105,7 @@ spec:
       workspaces:
         - name: source
           workspace: release-workspace
-    - name: collect-data
-      params:
-        - name: release
-          value: $(params.release)
-        - name: releasePlan
-          value: $(params.releasePlan)
-        - name: snapshot
-          value: $(params.snapshot)
-        - name: subdirectory
-          value: $(context.pipelineRun.uid)
-      taskRef:
-        resolver: "git"
-        params:
-          - name: url
-            value: https://github.com/konflux-ci/release-service-catalog.git
-          - name: revision
-            value: production
-          - name: pathInRepo
-            value: tasks/collect-data/collect-data.yaml
-      workspaces:
-        - name: data
-          workspace: release-workspace
-      runAfter:
-        - expand-snapshot
-    - name: reduce-snapshot
-      taskRef:
-        resolver: "git"
-        params:
-          - name: url
-            value: https://github.com/konflux-ci/release-service-catalog.git
-          - name: revision
-            value: production
-          - name: pathInRepo
-            value: tasks/reduce-snapshot/reduce-snapshot.yaml
-      params:
-        - name: SNAPSHOT
-          value: $(workspaces.data.path)/$(tasks.collect-data.results.snapshotSpec)
-        - name: SINGLE_COMPONENT
-          value: $(tasks.collect-data.results.singleComponentMode)
-        - name: SINGLE_COMPONENT_CUSTOM_RESOURCE
-          value: snapshot/$(tasks.collect-data.results.snapshotName)
-        - name: SINGLE_COMPONENT_CUSTOM_RESOURCE_NS
-          value: $(tasks.collect-data.results.snapshotNamespace)
-        - name: SNAPSHOT_PATH
-          value: $(workspaces.data.path)/$(tasks.collect-data.results.snapshotSpec)
-      workspaces:
-        - name: data
-          workspace: release-workspace
-      runAfter:
-        - collect-data
-    - name: apply-mapping
-      params:
-        - name: failOnEmptyResult
-          value: "true"
-        - name: dataPath
-          value: "$(tasks.collect-data.results.data)"
-        - name: snapshotPath
-          value: "$(tasks.collect-data.results.snapshotSpec)"
-      workspaces:
-        - name: config
-          workspace: release-workspace
-      runAfter:
-        - reduce-snapshot
-      taskRef:
-        resolver: "git"
-        params:
-          - name: url
-            value: https://github.com/konflux-ci/release-service-catalog.git
-          - name: revision
-            value: production
-          - name: pathInRepo
-            value: tasks/apply-mapping/apply-mapping.yaml
-    - name: verify-enterprise-contract
+    - name: verify-enterprise-contract-cli
       taskRef:
         resolver: "bundles"
         params:
@@ -189,7 +117,7 @@ spec:
             value: verify-enterprise-contract
       params:
         - name: IMAGES
-          value: "$(workspaces.data.path)/$(tasks.collect-data.results.snapshotSpec)"
+          value: $(tasks.expand-snapshot.results.cli-snapshot-spec)
         - name: SSL_CERT_DIR
           value: /var/run/secrets/kubernetes.io/serviceaccount
         - name: POLICY_CONFIGURATION
@@ -202,38 +130,32 @@ spec:
           value: $(params.enterpriseContractExtraRuleData)
         - name: TIMEOUT
           value: $(params.enterpriseContractTimeout)
-      workspaces:
-        - name: data
-          workspace: release-workspace
-      runAfter:
-        - apply-mapping
-    - name: push-snapshot
-      retries: 5
-      when:
-        - input: "$(tasks.apply-mapping.results.mapped)"
-          operator: in
-          values: ["true"]
+    # TODO: Use matrix?
+    - name: verify-enterprise-contract-bundle
       taskRef:
-        resolver: "git"
+        resolver: "bundles"
         params:
-          - name: url
-            value: https://github.com/konflux-ci/release-service-catalog.git
-          - name: revision
-            value: production
-          - name: pathInRepo
-            value: tasks/push-snapshot/push-snapshot.yaml
+          - name: bundle
+            value: quay.io/enterprise-contract/ec-task-bundle:snapshot
+          - name: kind
+            value: task
+          - name: name
+            value: verify-enterprise-contract
       params:
-        - name: snapshotPath
-          value: "$(tasks.collect-data.results.snapshotSpec)"
-        - name: dataPath
-          value: "$(tasks.collect-data.results.data)"
-        - name: resultsDirPath
-          value: "$(tasks.collect-data.results.resultsDir)"
-      workspaces:
-        - name: data
-          workspace: release-workspace
-      runAfter:
-        - verify-enterprise-contract
+        - name: IMAGES
+          value: $(tasks.expand-snapshot.results.bundle-snapshot-spec)
+        - name: SSL_CERT_DIR
+          value: /var/run/secrets/kubernetes.io/serviceaccount
+        - name: POLICY_CONFIGURATION
+          value: $(params.enterpriseContractPolicy)
+        - name: STRICT
+          value: "1"
+        - name: IGNORE_REKOR
+          value: "true"
+        - name: EXTRA_RULE_DATA
+          value: $(params.enterpriseContractExtraRuleData)
+        - name: TIMEOUT
+          value: $(params.enterpriseContractTimeout)
   finally:
     - name: cleanup
       taskRef:

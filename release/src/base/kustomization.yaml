@@ -19,13 +19,3 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
   - release.yaml
-patches:
-  - path: tasks/collect-data.yaml
-    target:
-      kind: Pipeline
-  - path: tasks/apply-mapping.yaml
-    target:
-      kind: Pipeline
-  - path: tasks/push-snapshot.yaml
-    target:
-      kind: Pipeline

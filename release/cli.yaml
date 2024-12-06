@@ -114,82 +114,10 @@ spec:
     workspaces:
     - name: source
       workspace: release-workspace
-  - name: collect-data
-    params:
-    - name: release
-      value: $(params.release)
-    - name: releasePlan
-      value: $(params.releasePlan)
-    - name: snapshot
-      value: $(params.snapshot)
-    - name: subdirectory
-      value: $(context.pipelineRun.uid)
-    runAfter:
-    - expand-snapshot
-    taskRef:
-      params:
-      - name: url
-        value: https://github.com/lcarva/release-service-bundles.git
-      - name: revision
-        value: support-tenant-releases
-      - name: pathInRepo
-        value: tasks/collect-data/collect-data.yaml
-      resolver: git
-    workspaces:
-    - name: data
-      workspace: release-workspace
-  - name: reduce-snapshot
-    params:
-    - name: SNAPSHOT
-      value: $(workspaces.data.path)/$(tasks.collect-data.results.snapshotSpec)
-    - name: SINGLE_COMPONENT
-      value: $(tasks.collect-data.results.singleComponentMode)
-    - name: SINGLE_COMPONENT_CUSTOM_RESOURCE
-      value: snapshot/$(tasks.collect-data.results.snapshotName)
-    - name: SINGLE_COMPONENT_CUSTOM_RESOURCE_NS
-      value: $(tasks.collect-data.results.snapshotNamespace)
-    - name: SNAPSHOT_PATH
-      value: $(workspaces.data.path)/$(tasks.collect-data.results.snapshotSpec)
-    runAfter:
-    - collect-data
-    taskRef:
-      params:
-      - name: url
-        value: https://github.com/konflux-ci/release-service-catalog.git
-      - name: revision
-        value: production
-      - name: pathInRepo
-        value: tasks/reduce-snapshot/reduce-snapshot.yaml
-      resolver: git
-    workspaces:
-    - name: data
-      workspace: release-workspace
-  - name: apply-mapping
-    params:
-    - name: failOnEmptyResult
-      value: "true"
-    - name: dataPath
-      value: $(tasks.collect-data.results.data)
-    - name: snapshotPath
-      value: $(tasks.collect-data.results.snapshotSpec)
-    runAfter:
-    - reduce-snapshot
-    taskRef:
-      params:
-      - name: url
-        value: https://github.com/konflux-ci/release-service-catalog.git
-      - name: revision
-        value: development
-      - name: pathInRepo
-        value: tasks/apply-mapping/apply-mapping.yaml
-      resolver: git
-    workspaces:
-    - name: config
-      workspace: release-workspace
-  - name: verify-enterprise-contract
+  - name: verify-enterprise-contract-cli
     params:
     - name: IMAGES
-      value: $(workspaces.data.path)/$(tasks.collect-data.results.snapshotSpec)
+      value: $(tasks.expand-snapshot.results.cli-snapshot-spec)
     - name: SSL_CERT_DIR
       value: /var/run/secrets/kubernetes.io/serviceaccount
     - name: POLICY_CONFIGURATION
@@ -202,8 +130,6 @@ spec:
       value: $(params.enterpriseContractExtraRuleData)
     - name: TIMEOUT
       value: $(params.enterpriseContractTimeout)
-    runAfter:
-    - apply-mapping
     taskRef:
       params:
       - name: bundle
@@ -213,36 +139,30 @@ spec:
       - name: name
         value: verify-enterprise-contract
       resolver: bundles
-    workspaces:
-    - name: data
-      workspace: release-workspace
-  - name: push-snapshot
+  - name: verify-enterprise-contract-bundle
     params:
-    - name: snapshotPath
-      value: $(tasks.collect-data.results.snapshotSpec)
-    - name: dataPath
-      value: $(tasks.collect-data.results.data)
-    - name: resultsDirPath
-      value: $(tasks.collect-data.results.resultsDir)
-    retries: 5
-    runAfter:
-    - verify-enterprise-contract
+    - name: IMAGES
+      value: $(tasks.expand-snapshot.results.bundle-snapshot-spec)
+    - name: SSL_CERT_DIR
+      value: /var/run/secrets/kubernetes.io/serviceaccount
+    - name: POLICY_CONFIGURATION
+      value: $(params.enterpriseContractPolicy)
+    - name: STRICT
+      value: "1"
+    - name: IGNORE_REKOR
+      value: "true"
+    - name: EXTRA_RULE_DATA
+      value: $(params.enterpriseContractExtraRuleData)
+    - name: TIMEOUT
+      value: $(params.enterpriseContractTimeout)
     taskRef:
       params:
-      - name: url
-        value: https://github.com/lcarva/release-service-bundles.git
-      - name: revision
-        value: KFLUXBUGS-1741
-      - name: pathInRepo
-        value: tasks/push-snapshot/push-snapshot.yaml
-      resolver: git
-    when:
-    - input: $(tasks.apply-mapping.results.mapped)
-      operator: in
-      values:
-      - "true"
-    workspaces:
-    - name: data
-      workspace: release-workspace
+      - name: bundle
+        value: quay.io/enterprise-contract/ec-task-bundle:snapshot
+      - name: kind
+        value: task
+      - name: name
+        value: verify-enterprise-contract
+      resolver: bundles
   workspaces:
   - name: release-workspace
