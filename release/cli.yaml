@@ -43,8 +43,6 @@ spec:
     name: enterpriseContractExtraRuleData
     type: string
   tasks:
-  # TODO: Can't use Konflux's git-clone Task because that requires a security context not provided
-  # to the ServiceAccount running this pipeline (securityContext.runAsUser: 0).
   - name: clone-repository
     params:
     # TODO: Use the repo and revision here.
@@ -56,6 +54,8 @@ spec:
       value: source
     taskRef:
       params:
+      # TODO: Can't use Konflux's git-clone Task because that requires a security context not provided
+      # to the ServiceAccount running this pipeline (securityContext.runAsUser: 0).
       - name: url
         value: https://github.com/lcarva/build-definitions.git
       - name: revision
@@ -63,30 +63,9 @@ spec:
       - name: pathInRepo
         value: task/git-clone/0.1/git-clone.yaml
       resolver: git
-      # params:
-      # - name: name
-      #   value: git-clone
-      # - name: bundle
-      #   value: quay.io/konflux-ci/tekton-catalog/task-git-clone:0.1@sha256:d091a9e19567a4cbdc5acd57903c71ba71dc51d749a4ba7477e689608851e981
-      # - name: kind
-      #   value: task
-      # resolver: bundles
     workspaces:
     - name: output
       workspace: release-workspace
-  # - name: clone-repository
-  #   params:
-  #   # TODO: Use the repo and revision here.
-  #   - name: url
-  #     value: https://github.com/lcarva/ec-cli
-  #   - name: revision
-  #     value: unified-build-release
-  #   taskRef:
-  #     name: git-clone-1-9-0
-  #     kind: ClusterTask
-  #   workspaces:
-  #   - name: output
-  #     workspace: release-workspace
   - name: expand-snapshot
     params:
     - name: input
@@ -169,66 +148,47 @@ spec:
     workspaces:
     - name: data
       workspace: release-workspace
-  - name: release-cli
+  - name: push
     params:
-    - name: snapshot-spec
+    - name: cli-snapshot-spec
       value: $(tasks.expand-snapshot.results.cli-snapshot-spec)
-    - name: target-repo
+    - name: cli-target-repo
       value: $(params.cli-repo)
-    runAfter:
-    - verify-enterprise-contract-cli
-    - verify-enterprise-contract-bundle
-    taskSpec:
-      params:
-      - name: snapshot-spec
-        type: string
-      - name: target-repo
-        type: string
-      stepTemplate:
-        env:
-          - name: HOME
-            value: /tekton/home
-      steps:
-      - command:
-        - hack/copy-snapshot-image.sh
-        - $(params.snapshot-spec)
-        - $(params.target-repo)
-        image: quay.io/konflux-ci/appstudio-utils:latest
-        name: copy
-        workingDir: $(workspaces.source.path)/source
-      workspaces:
-      - name: source
-    workspaces:
-    - name: source
-      workspace: release-workspace
-  # TODO: Use matrix?
-  - name: release-bundle
-    params:
-    - name: snapshot-spec
+    - name: bundle-snapshot-spec
       value: $(tasks.expand-snapshot.results.bundle-snapshot-spec)
-    - name: target-repo
+    - name: bundle-target-repo
       value: $(params.bundle-repo)
     runAfter:
     - verify-enterprise-contract-cli
     - verify-enterprise-contract-bundle
     taskSpec:
       params:
-      - name: snapshot-spec
+      - name: cli-snapshot-spec
         type: string
-      - name: target-repo
+      - name: cli-target-repo
+        type: string
+      - name: bundle-snapshot-spec
+        type: string
+      - name: bundle-target-repo
         type: string
       stepTemplate:
         env:
           - name: HOME
             value: /tekton/home
+        workingDir: $(workspaces.source.path)/source
       steps:
       - command:
         - hack/copy-snapshot-image.sh
-        - $(params.snapshot-spec)
-        - $(params.target-repo)
+        - $(params.cli-snapshot-spec)
+        - $(params.cli-target-repo)
         image: quay.io/konflux-ci/appstudio-utils:latest
-        name: copy
-        workingDir: $(workspaces.source.path)/source
+        name: copy-cli
+      - command:
+        - hack/copy-snapshot-image.sh
+        - $(params.bundle-snapshot-spec)
+        - $(params.bundle-target-repo)
+        image: quay.io/konflux-ci/appstudio-utils:latest
+        name: copy-bundle
       workspaces:
       - name: source
     workspaces:
