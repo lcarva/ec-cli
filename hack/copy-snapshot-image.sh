@@ -19,6 +19,8 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
+set -x
+
 SNAPSHOT_SPEC=$1
 TARGET_REPO=$2
 
