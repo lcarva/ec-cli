@@ -38,5 +38,5 @@ TAGS=(
 )
 for tag in "${TAGS[@]}"; do
     echo "Pushing image with tag ${tag}"
-    cosign copy "${IMAGE_REF}" "${TARGET_REPO}:${tag}"
+    cosign copy --force "${IMAGE_REF}" "${TARGET_REPO}:${tag}"
 done
