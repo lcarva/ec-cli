@@ -21,25 +21,6 @@ metadata:
   name: release-cli
 spec:
   description: Tekton pipeline to release Snapshots to a registry.
-  finally:
-  - name: cleanup
-    params:
-    - name: subdirectory
-      value: $(context.pipelineRun.uid)
-    - name: delay
-      value: "0"
-    taskRef:
-      params:
-      - name: url
-        value: https://github.com/konflux-ci/release-service-catalog.git
-      - name: revision
-        value: production
-      - name: pathInRepo
-        value: tasks/cleanup-workspace/cleanup-workspace.yaml
-      resolver: git
-    workspaces:
-    - name: input
-      workspace: release-workspace
   params:
   # TODO: Use the real repos here.
   - default: quay.io/lucarval/test-release-ec-cli
@@ -72,7 +53,7 @@ spec:
     - name: revision
       value: unified-build-release
     - name: subdirectory
-      value: $(context.pipelineRun.uid)
+      value: source
     taskRef:
       params:
       - name: url
@@ -100,8 +81,6 @@ spec:
   #     value: https://github.com/lcarva/ec-cli
   #   - name: revision
   #     value: unified-build-release
-  #   - name: subdirectory
-  #     value: $(context.pipelineRun.uid)
   #   taskRef:
   #     name: git-clone-1-9-0
   #     kind: ClusterTask
@@ -123,6 +102,10 @@ spec:
         type: string
       - name: bundle-snapshot-spec
         type: string
+      stepTemplate:
+        env:
+          - name: HOME
+            value: /tekton/home
       steps:
       - command:
         - hack/expand-snapshot.sh
@@ -131,7 +114,7 @@ spec:
         - $(results.bundle-snapshot-spec.path)
         image: quay.io/konflux-ci/appstudio-utils:latest
         name: expand
-        workingDir: $(workspaces.source.path)/$(context.pipelineRun.uid)
+        workingDir: $(workspaces.source.path)/source
       workspaces:
       - name: source
     workspaces:
@@ -144,7 +127,7 @@ spec:
     - name: SSL_CERT_DIR
       value: /var/run/secrets/kubernetes.io/serviceaccount
     - name: POLICY_CONFIGURATION
-      value: $(workspaces.data.path)/$(context.pipelineRun.uid)/policies/cli/policy.yaml
+      value: $(workspaces.data.path)/source/policies/cli/policy.yaml
     - name: IGNORE_REKOR
       value: "true"
     - name: EXTRA_RULE_DATA
@@ -169,7 +152,7 @@ spec:
     - name: SSL_CERT_DIR
       value: /var/run/secrets/kubernetes.io/serviceaccount
     - name: POLICY_CONFIGURATION
-      value: $(workspaces.data.path)/$(context.pipelineRun.uid)/policies/tekton-task/policy.yaml
+      value: $(workspaces.data.path)/source/policies/tekton-task/policy.yaml
     - name: IGNORE_REKOR
       value: "true"
     - name: EXTRA_RULE_DATA
@@ -212,7 +195,7 @@ spec:
         - $(params.target-repo)
         image: quay.io/konflux-ci/appstudio-utils:latest
         name: copy
-        workingDir: $(workspaces.source.path)/$(context.pipelineRun.uid)
+        workingDir: $(workspaces.source.path)/source
       workspaces:
       - name: source
     workspaces:
@@ -245,7 +228,7 @@ spec:
         - $(params.target-repo)
         image: quay.io/konflux-ci/appstudio-utils:latest
         name: copy
-        workingDir: $(workspaces.source.path)/$(context.pipelineRun.uid)
+        workingDir: $(workspaces.source.path)/source
       workspaces:
       - name: source
     workspaces:
