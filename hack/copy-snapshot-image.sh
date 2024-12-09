@@ -20,6 +20,7 @@ set -o nounset
 set -o pipefail
 
 set -x
+< ~/.docker/config.json jq -r '.auths | keys'
 
 SNAPSHOT_SPEC=$1
 TARGET_REPO=$2
