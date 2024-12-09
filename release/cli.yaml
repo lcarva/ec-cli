@@ -201,6 +201,10 @@ spec:
         type: string
       - name: target-repo
         type: string
+      stepTemplate:
+        env:
+          - name: HOME
+            value: /tekton/home
       steps:
       - command:
         - hack/copy-snapshot-image.sh
@@ -230,6 +234,10 @@ spec:
         type: string
       - name: target-repo
         type: string
+      stepTemplate:
+        env:
+          - name: HOME
+            value: /tekton/home
       steps:
       - command:
         - hack/copy-snapshot-image.sh
